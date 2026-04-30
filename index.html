@@ -1,438 +1,281 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SaaS Beauty Appointment</title>
+    <title>Flow Beauty</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-button-color: #3390ec;
+            --tg-theme-button-text-color: #ffffff;
+            --tg-theme-hint-color: #707579;
+            --tg-theme-secondary-bg-color: #f4f4f5;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            margin: 0;
+            padding: 0;
+            -webkit-user-select: none; /* Для Safari и Chrome */
+user-select: none;         /* Стандартное свойство, которое просил VS Code */
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Блок текущей записи - скрыт по умолчанию */
+        #my-booking-status {
+            display: none;
+            background-color: #e8f4fd;
+            border: 2px solid var(--tg-theme-button-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .service-card {
+            background-color: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-info h3 { margin: 0 0 5px 0; font-size: 17px; }
+        .service-info p { margin: 0; font-size: 13px; color: var(--tg-theme-hint-color); }
+        .price { font-weight: bold; color: var(--tg-theme-button-color); margin-top: 5px; }
+
+        .btn-select {
+            background-color: var(--tg-theme-button-color);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* Форма записи */
+        #booking-form {
+            display: none;
+            background: var(--tg-theme-bg-color);
+            padding: 10px 0;
+        }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 600; }
+        
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .btn-main {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .btn-back {
+            width: 100%;
+            padding: 10px;
+            background: none;
+            border: none;
+            color: var(--tg-theme-hint-color);
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <!-- App Container -->
-    <div id="app">
-        <!-- Header -->
-        <header class="glass-header">
-            <div class="header-content">
-                <div class="logo">
-                    <div class="logo-icon"><i class="fa-solid fa-gem"></i></div>
-                    <h2>Lumina Space</h2>
-                </div>
-                <div class="user-avatar" id="userAvatar" onclick="navigate('profile')"></div>
-            </div>
-        </header>
 
-        <!-- Views -->
-        <main class="content-area">
-            
-            <!-- HOME VIEW (Services) -->
-            <section id="view-home" class="view active">
-                <div class="hero-section">
-                    <h1>Запишитесь на<br><span class="gradient-text">Идеальный образ</span></h1>
-                    <p>Выберите услугу и мастера в пару кликов</p>
-                </div>
-                
-                <div class="search-bar">
-                    <i class="fa-solid fa-search"></i>
-                    <input type="text" placeholder="Поиск услуг...">
-                </div>
+<div class="header">
+    <h1>Flow Beauty</h1>
+    <p>Запись на услуги</p>
+</div>
 
-                <div class="categories-scroll" id="categoryTabs">
-                    <div class="category-chip active">Все</div>
-                    <div class="category-chip">Стрижки</div>
-                    <div class="category-chip">Маникюр</div>
-                    <div class="category-chip">Уход</div>
-                </div>
-
-                <div class="services-grid" id="servicesContainer">
-                    <!-- Loaded via JS -->
-                    <div class="skeleton-card"></div>
-                    <div class="skeleton-card"></div>
-                </div>
-            </section>
-
-            <!-- BOOKING VIEW -->
-            <section id="view-booking" class="view">
-                <h2 class="view-title"><i class="fa-solid fa-calendar-check"></i> Выбор времени</h2>
-                <div class="booking-card" id="selectedServiceCard"></div>
-                
-                <h3 class="section-subtitle">Выберите дату</h3>
-                <div class="date-slider" id="dateSlider"></div>
-
-                <h3 class="section-subtitle">Доступное время</h3>
-                <div class="time-grid" id="timeGrid">
-                    <div class="empty-state">Сначала выберите дату</div>
-                </div>
-
-                <button class="btn-primary full-width mt-20" id="btnContinueCheckout" disabled>Продолжить</button>
-            </section>
-
-            <!-- CHECKOUT VIEW -->
-            <section id="view-checkout" class="view">
-                <h2 class="view-title"><i class="fa-solid fa-credit-card"></i> Оформление</h2>
-                <div class="summary-card">
-                    <div class="summary-row">
-                        <span>Услуга</span>
-                        <strong id="chkService"></strong>
-                    </div>
-                    <div class="summary-row">
-                        <span>Дата и время</span>
-                        <strong id="chkDateTime"></strong>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="summary-row total">
-                        <span>Итого к оплате</span>
-                        <strong id="chkTotal" class="gradient-text"></strong>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">Способ оплаты</h3>
-                <div class="payment-methods">
-                    <div class="pay-method active" onclick="selectPayment('card')">
-                        <i class="fa-brands fa-stripe"></i>
-                        <span>Картой онлайн</span>
-                    </div>
-                    <div class="pay-method" onclick="selectPayment('telegram')">
-                        <i class="fa-brands fa-telegram"></i>
-                        <span>Telegram Pay</span>
-                    </div>
-                    <div class="pay-method" onclick="selectPayment('cash')">
-                        <i class="fa-solid fa-money-bill"></i>
-                        <span>На месте</span>
-                    </div>
-                </div>
-
-                <button class="btn-primary full-width mt-20" onclick="confirmBooking()">Подтвердить и Оплатить</button>
-            </section>
-
-            <!-- APPOINTMENTS VIEW -->
-            <section id="view-appointments" class="view">
-                <h2 class="view-title">Мои записи</h2>
-                <div id="appointmentsList" class="appointments-list">
-                    <div class="skeleton-card"></div>
-                </div>
-            </section>
-
-            <!-- PROFILE VIEW -->
-            <section id="view-profile" class="view">
-                <div class="profile-header">
-                    <div class="profile-avatar-large"><i class="fa-solid fa-user"></i></div>
-                    <h2 id="profName">User</h2>
-                    <p class="status-badge">Клиент</p>
-                </div>
-                
-                <div class="menu-list">
-                    <div class="menu-item" onclick="navigate('appointments')">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        <span>История записей</span>
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </div>
-                    <div class="menu-item admin-only" onclick="navigate('admin')" style="display:none;">
-                        <i class="fa-solid fa-chart-pie"></i>
-                        <span>CRM & Аналитика</span>
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </div>
-                    <div class="menu-item" onclick="alert('Уведомления настроены')">
-                        <i class="fa-solid fa-bell"></i>
-                        <span>Уведомления</span>
-                        <i class="fa-solid fa-chevron-right arrow"></i>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ADMIN CRM VIEW -->
-            <section id="view-admin" class="view">
-                <h2 class="view-title gradient-text">Dashboard</h2>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-wallet"></i></div>
-                        <div class="stat-value" id="adRev">$0</div>
-                        <div class="stat-label">Выручка</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                        <div class="stat-value" id="adCli">0</div>
-                        <div class="stat-label">Клиенты</div>
-                    </div>
-                </div>
-
-                <h3 class="section-subtitle">Последние записи</h3>
-                <div class="admin-list" id="adminRecentList"></div>
-            </section>
-
-        </main>
-
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <div class="nav-item active" onclick="navigate('home')">
-                <i class="fa-solid fa-house"></i>
-                <span>Главная</span>
-            </div>
-            <div class="nav-item" onclick="navigate('appointments')">
-                <i class="fa-solid fa-calendar"></i>
-                <span>Записи</span>
-            </div>
-            <div class="nav-item" onclick="toggleAIChat()">
-                <div class="ai-fab"><i class="fa-solid fa-sparkles"></i></div>
-                <span>AI Ассистент</span>
-            </div>
-            <div class="nav-item" onclick="navigate('profile')">
-                <i class="fa-solid fa-user"></i>
-                <span>Профиль</span>
-            </div>
-        </nav>
-
-        <!-- AI Chat Modal -->
-        <div id="aiChatModal" class="modal-overlay">
-            <div class="modal-content chat-content">
-                <div class="chat-header">
-                    <div>
-                        <i class="fa-solid fa-sparkles gradient-text"></i> Lumina AI
-                    </div>
-                    <i class="fa-solid fa-xmark" onclick="toggleAIChat()"></i>
-                </div>
-                <div class="chat-body" id="chatBody">
-                    <div class="message ai">Привет! Я ваш AI ассистент. Помочь с выбором услуги или записью?</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chatInput" placeholder="Напишите сообщение...">
-                    <button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-
+<div class="container">
+    <!-- Секция с подтвержденной записью -->
+    <div id="my-booking-status">
+        <h3 style="margin-top:0; color: #000;">✅ Вы записаны!</h3>
+        <div id="confirmed-details" style="font-size: 15px; line-height: 1.5; color: #000;"></div>
     </div>
 
-    <!-- MAIN SCRIPT -->
-    <script>
-        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:8000/api' : '/api';
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+    <!-- Список услуг -->
+    <div id="services-page">
+        <h2 style="font-size: 20px;">Выберите услугу:</h2>
+        <div id="services-list">Загрузка...</div>
+    </div>
 
-        // State
-        const state = {
-            token: null,
-            user: null,
-            services: [],
-            currentBooking: { service: null, date: null, time: null },
-            paymentMethod: 'card'
+    <!-- Экран оформления -->
+    <div id="booking-form">
+        <h2 id="selected-service-title">Оформление</h2>
+        
+        <div class="form-group">
+            <label>Мастер:</label>
+            <select id="master-name">
+                <option value="Артём (Топ-мастер)">Артём (Топ-мастер)</option>
+                <option value="Мария (Стилист)">Мария (Стилист)</option>
+                <option value="Дмитрий (Барбер)">Дмитрий (Барбер)</option>
+                <option value="Елена (Визажист)">Елена (Визажист)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Удобное время:</label>
+            <select id="booking-time">
+                <option value="09:00">09:00</option>
+                <option value="10:30">10:30</option>
+                <option value="12:00">12:00</option>
+                <option value="13:30">13:30</option>
+                <option value="15:00">15:00</option>
+                <option value="16:30">16:30</option>
+                <option value="18:00">18:00</option>
+                <option value="19:30">19:30</option>
+                <option value="21:00">21:00</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Ваш телефон для связи:</label>
+            <input type="tel" id="customer-phone" placeholder="+7 (___) ___-__-__">
+        </div>
+
+        <button class="btn-main" onclick="submitBooking()">Подтвердить запись</button>
+        <button class="btn-back" onclick="showServices()">← Назад к услугам</button>
+    </div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    const API_URL = 'https://silly-turkeys-share.loca.lt/api'; // ТВОЯ ССЫЛКА
+    let currentService = null;
+
+    tg.expand();
+
+    // Загрузка услуг
+    async function loadServices() {
+        try {
+            const response = await fetch(`${API_URL}/services`);
+            const services = await response.json();
+            const list = document.getElementById('services-list');
+            list.innerHTML = '';
+
+            services.forEach(s => {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                card.innerHTML = `
+                    <div class="service-info">
+                        <h3>${s.name}</h3>
+                        <p>${s.description}</p>
+                        <div class="price">${s.price} ₽</div>
+                    </div>
+                    <button class="btn-select" onclick="openBooking('${s.id}', '${s.name}')">Выбрать</button>
+                `;
+                list.appendChild(card);
+            });
+        } catch (e) {
+            document.getElementById('services-list').innerHTML = "Ошибка сервера. Проверь туннель!";
+        }
+    }
+
+    function openBooking(id, name) {
+        currentService = { id, name };
+        document.getElementById('services-page').style.display = 'none';
+        document.getElementById('booking-form').style.display = 'block';
+        document.getElementById('selected-service-title').innerText = name;
+    }
+
+    function showServices() {
+        document.getElementById('services-page').style.display = 'block';
+        document.getElementById('booking-form').style.display = 'none';
+    }
+
+    async function submitBooking() {
+        const phone = document.getElementById('customer-phone').value;
+        const master = document.getElementById('master-name').value;
+        const time = document.getElementById('booking-time').value;
+        const user = tg.initDataUnsafe?.user;
+
+        if (!phone || phone.length < 5) {
+            tg.showAlert("Пожалуйста, введите корректный номер телефона");
+            return;
+        }
+
+        const payload = {
+            service_id: parseInt(currentService.id),
+            customer_name: user ? `${user.first_name} ${user.last_name || ''}` : "Клиент",
+            customer_phone: phone,
+            booking_time: time,
+            master_name: master
         };
 
-        // Initialize
-        async function initApp() {
-            try {
-                // Auth Fake fallback for browser dev
-                let initData = tg.initData || "query_id=123&user=%7B%22id%22%3A123%2C%22first_name%22%3A%22Admin%22%2C%22username%22%3A%22admin_username%22%7D&hash=dev";
+        try {
+            const response = await fetch(`${API_URL}/bookings`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                // Прячем форму, показываем блок подтверждения
+                document.getElementById('booking-form').style.display = 'none';
+                document.getElementById('services-page').style.display = 'block';
                 
-                // MOCK FETCH FOR DEV ENVIRONMENT WITHOUT BACKEND RUNNING
-                // In production, uncomment the fetch:
-                /*
-                const authRes = await fetch(`${API_URL}/auth`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ initData })
-                });
-                const authData = await authRes.json();
-                */
-                const authData = { token: "123", user: { id: 123, first_name: "Client", is_admin: true } };
-
-                state.token = authData.token;
-                state.user = authData.user;
-                
-                document.getElementById('userAvatar').innerText = state.user.first_name.charAt(0);
-                document.getElementById('profName').innerText = state.user.first_name;
-                
-                if(state.user.is_admin) {
-                    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'flex');
-                }
-
-                loadServices();
-            } catch (err) {
-                console.error("Auth error", err);
-            }
-        }
-
-        // Navigation
-        function navigate(viewId) {
-            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(`view-${viewId}`).classList.add('active');
-            
-            // Highlight nav
-            const navMap = { 'home': 0, 'appointments': 1, 'profile': 3 };
-            if(navMap[viewId] !== undefined) {
-                document.querySelectorAll('.nav-item')[navMap[viewId]].classList.add('active');
-            }
-
-            if(viewId === 'appointments') loadAppointments();
-            if(viewId === 'admin') loadAdminStats();
-        }
-
-        // Services Logic
-        async function loadServices() {
-            // Mock data for frontend preview
-            state.services = [
-                {id: 1, category: "Стрижки", name: "Мужская стрижка", price: 25, duration_minutes: 45, description: "Стрижка + мытье головы + укладка"},
-                {id: 2, category: "Маникюр", name: "Аппаратный маникюр", price: 30, duration_minutes: 60, description: "Обработка кутикулы + покрытие гель-лак"},
-                {id: 3, category: "Уход", name: "SPA уход для волос", price: 40, duration_minutes: 90, description: "Премиальное восстановление"}
-            ];
-            renderServices(state.services);
-        }
-
-        function renderServices(services) {
-            const container = document.getElementById('servicesContainer');
-            container.innerHTML = '';
-            services.forEach(s => {
-                container.innerHTML += `
-                    <div class="service-card" onclick="startBooking(${s.id})">
-                        <div class="service-info">
-                            <h4>${s.name}</h4>
-                            <p>${s.duration_minutes} мин • ${s.description}</p>
-                        </div>
-                        <div class="service-price">$${s.price}</div>
-                    </div>
+                const statusBlock = document.getElementById('my-booking-status');
+                statusBlock.style.display = 'block';
+                document.getElementById('confirmed-details').innerHTML = `
+                    <b>Услуга:</b> ${currentService.name}<br>
+                    <b>Мастер:</b> ${master}<br>
+                    <b>Время:</b> Сегодня в ${time}<br>
+                    <b>Контакт:</b> ${phone}
                 `;
-            });
-        }
-
-        // Booking Logic
-        function startBooking(serviceId) {
-            state.currentBooking.service = state.services.find(s => s.id === serviceId);
-            document.getElementById('selectedServiceCard').innerHTML = `
-                <div class="chk-header">
-                    <h4>${state.currentBooking.service.name}</h4>
-                    <span class="gradient-text">$${state.currentBooking.service.price}</span>
-                </div>
-                <p>${state.currentBooking.service.duration_minutes} мин</p>
-            `;
-            generateDateSlider();
-            navigate('booking');
-        }
-
-        function generateDateSlider() {
-            const slider = document.getElementById('dateSlider');
-            slider.innerHTML = '';
-            let today = new Date();
-            for(let i=0; i<14; i++) {
-                let d = new Date(today);
-                d.setDate(d.getDate() + i);
-                const dayStr = d.toLocaleDateString('ru-RU', { weekday: 'short' });
-                const dateNum = d.getDate();
-                const dateIso = d.toISOString().split('T')[0];
                 
-                const div = document.createElement('div');
-                div.className = 'date-card';
-                div.innerHTML = `<span>${dayStr}</span><strong>${dateNum}</strong>`;
-                div.onclick = () => {
-                    document.querySelectorAll('.date-card').forEach(el => el.classList.remove('active'));
-                    div.classList.add('active');
-                    state.currentBooking.date = dateIso;
-                    loadTimeSlots(dateIso);
-                };
-                slider.appendChild(div);
+                tg.showAlert("Запись успешно создана!");
+            } else {
+                tg.showAlert("Ошибка при записи. Попробуйте еще раз.");
             }
+        } catch (e) {
+            tg.showAlert("Нет связи с сервером.");
         }
+    }
 
-        function loadTimeSlots(dateIso) {
-            const grid = document.getElementById('timeGrid');
-            grid.innerHTML = '';
-            // Mock slots
-            const times = ["10:00", "11:30", "13:00", "15:00", "16:30"];
-            times.forEach(t => {
-                const btn = document.createElement('button');
-                btn.className = 'time-slot';
-                btn.innerText = t;
-                btn.onclick = () => {
-                    document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('active'));
-                    btn.classList.add('active');
-                    state.currentBooking.time = t;
-                    document.getElementById('btnContinueCheckout').disabled = false;
-                };
-                grid.appendChild(btn);
-            });
-            document.getElementById('btnContinueCheckout').onclick = () => goToCheckout();
-        }
-
-        function goToCheckout() {
-            document.getElementById('chkService').innerText = state.currentBooking.service.name;
-            document.getElementById('chkDateTime').innerText = `${state.currentBooking.date} в ${state.currentBooking.time}`;
-            document.getElementById('chkTotal').innerText = `$${state.currentBooking.service.price}`;
-            navigate('checkout');
-        }
-
-        function selectPayment(method) {
-            state.paymentMethod = method;
-            document.querySelectorAll('.pay-method').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        }
-
-        function confirmBooking() {
-            tg.showConfirm(`Подтвердить запись на ${state.currentBooking.service.name}?`, (ok) => {
-                if(ok) {
-                    tg.showAlert("Запись успешно создана! Оплата в обработке.", () => {
-                        navigate('appointments');
-                    });
-                }
-            });
-        }
-
-        // Appointments & CRM
-        function loadAppointments() {
-            const list = document.getElementById('appointmentsList');
-            // Mock data
-            list.innerHTML = `
-                <div class="appointment-card">
-                    <div class="apt-header">
-                        <span class="status-badge status-confirmed">Подтверждено</span>
-                        <span>$25</span>
-                    </div>
-                    <h4>Мужская стрижка</h4>
-                    <p><i class="fa-regular fa-clock"></i> Завтра, 15:00</p>
-                </div>
-            `;
-        }
-
-        function loadAdminStats() {
-            document.getElementById('adRev').innerText = "$3,450";
-            document.getElementById('adCli').innerText = "128";
-            document.getElementById('adminRecentList').innerHTML = `
-                <div class="admin-item">
-                    <div>
-                        <strong>Alex K.</strong><br>
-                        <small>SPA уход</small>
-                    </div>
-                    <div class="status-badge status-pending">Ожидает</div>
-                </div>
-            `;
-        }
-
-        // AI Chat
-        function toggleAIChat() {
-            const modal = document.getElementById('aiChatModal');
-            modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function sendChatMessage() {
-            const input = document.getElementById('chatInput');
-            const msg = input.value.trim();
-            if(!msg) return;
-            
-            const body = document.getElementById('chatBody');
-            body.innerHTML += `<div class="message user">${msg}</div>`;
-            input.value = '';
-            body.scrollTop = body.scrollHeight;
-
-            setTimeout(() => {
-                body.innerHTML += `<div class="message ai">Отличный выбор! Я перенаправлю вас на страницу услуг.</div>`;
-                body.scrollTop = body.scrollHeight;
-                setTimeout(() => { toggleAIChat(); navigate('home'); }, 1500);
-            }, 1000);
-        }
-
-        // Run
-        window.onload = initApp;
-    </script>
+    loadServices();
+</script>
 </body>
 </html>
