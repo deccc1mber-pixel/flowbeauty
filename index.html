@@ -3,162 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Serevko Beauty Salon</title>
+    <title>Serevko Beauty</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --accent: #f2a3b3;
-            --bg: #000000;
-            --card-bg: #1c1c1e;
-            --text-gray: #8e8e93;
+            --bg: #0d0d0d;
+            --surface: #1a1a1c;
+            --accent: #f4a6b7;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
             --border: #2c2c2e;
         }
 
         body {
-            background-color: var(--bg);
-            color: white;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0;
-            padding: 0;
-            -webkit-user-select: none;
-            user-select: none; /* Исправленная ошибка совместимости */
+            background-color: var(--bg); color: var(--text-main);
+            font-family: -apple-system, sans-serif;
+            margin: 0; padding: 0;
+            user-select: none; -webkit-user-select: none;
             overflow-x: hidden;
         }
 
-        .container { padding: 20px; padding-bottom: 120px; }
+        /* Система экранов (Маршрутизация) */
+        .screen { display: none; padding: 20px; padding-bottom: 100px; animation: fade 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .header { margin-bottom: 25px; }
-        .header h1 { font-size: 26px; font-weight: 700; margin: 0; }
-        .header p { color: var(--text-gray); font-size: 14px; margin-top: 5px; }
+        h1 { font-size: 24px; font-weight: 700; margin: 0 0 5px; }
+        .subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: 600; margin: 25px 0 15px; }
 
-        .section-title { font-size: 18px; font-weight: 600; margin: 25px 0 15px; color: #fff; }
-
-        /* Карточки мастеров */
-        .master-card {
-            background: var(--card-bg);
-            border: 2px solid transparent;
-            border-radius: 16px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            transition: all 0.2s ease;
-        }
-        .master-card.selected { border-color: var(--accent); background: #251d1f; }
-        .master-avatar { width: 50px; height: 50px; border-radius: 50%; background: #333; margin-right: 15px; overflow: hidden; }
-        .master-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .master-info h4 { margin: 0; font-size: 16px; }
-        .master-info p { margin: 0; font-size: 13px; color: var(--text-gray); }
-
-        /* Сетка времени */
-        .time-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .time-slot {
-            background: var(--card-bg);
-            padding: 12px 5px;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            border: 1px solid var(--border);
+        /* Карточки услуг и мастеров */
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 16px; margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: space-between;
             transition: 0.2s;
         }
-        .time-slot.selected { background: var(--accent); color: black; border-color: var(--accent); }
+        .card:active { transform: scale(0.98); }
+        .card.selected { border-color: var(--accent); background: #2a1f22; }
+        
+        .card-left { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 50px; height: 50px; border-radius: 12px; background: #333; object-fit: cover; }
+        .avatar.round { border-radius: 50%; }
+        .info h4 { margin: 0; font-size: 16px; }
+        .info p { margin: 4px 0 0; font-size: 13px; color: var(--text-muted); }
+        .price { font-weight: 600; color: var(--accent); }
 
-        /* Фиксированная кнопка внизу */
-        .footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            padding: 20px; background: linear-gradient(to top, black, transparent);
-            box-sizing: border-box;
+        /* Сетка времени */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .slot {
+            background: var(--surface); border: 1px solid var(--border);
+            padding: 12px 0; text-align: center; border-radius: 12px;
+            font-size: 14px; font-weight: 500; transition: 0.2s;
         }
-        .main-btn {
-            background: var(--accent);
-            color: black;
-            border: none;
-            width: 100%;
-            padding: 18px;
-            border-radius: 15px;
-            font-size: 16px;
-            font-weight: 800;
-            opacity: 0.4;
-            pointer-events: none;
-            transition: 0.3s;
+        .slot.selected { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        /* Нижняя панель */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: rgba(26, 26, 28, 0.9);
+            backdrop-filter: blur(10px); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px 0 25px;
+            z-index: 100;
         }
-        .main-btn.active { opacity: 1; pointer-events: auto; transform: scale(1); }
-        .main-btn:active { transform: scale(0.96); }
+        .nav-item { color: var(--text-muted); font-size: 11px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 20px; font-style: normal; }
+
+        /* Кнопка */
+        .fixed-btn {
+            position: fixed; bottom: 85px; left: 20px; right: 20px;
+            background: var(--accent); color: #000; border: none;
+            padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700;
+            width: calc(100% - 40px); display: none; z-index: 99;
+        }
+        .fixed-btn.show { display: block; }
+        .fixed-btn:disabled { opacity: 0.5; pointer-events: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>Окрашивание волос</h1>
-        <p>3 500 ₽ • 120 мин</p>
+    <!-- ЭКРАН 1: ГЛАВНАЯ (Категории) -->
+    <div id="screen-home" class="screen active">
+        <h1>Добро пожаловать ✨</h1>
+        <div class="subtitle">Ваш личный салон красоты в Telegram</div>
+        
+        <div class="section-title">Категории услуг</div>
+        <div class="card" onclick="goToServices('Волосы')">
+            <div class="card-left">
+                <img src="https://images.unsplash.com/photo-1560869713-7d0a29430863?w=100&q=80" class="avatar">
+                <div class="info"><h4>Парикмахерский зал</h4><p>Стрижки, окрашивания, уход</p></div>
+            </div>
+            <div>❯</div>
+        </div>
+        <div class="card" onclick="goToServices('Ногти')">
+            <div class="card-left">
+                <img src="https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=100&q=80" class="avatar">
+                <div class="info"><h4>Nail-сервис</h4><p>Маникюр, педикюр, дизайн</p></div>
+            </div>
+            <div>❯</div>
+        </div>
+        <div class="card" onclick="goToServices('Брови')">
+            <div class="card-left">
+                <img src="https://images.pexels.com/photos/4621424/pexels-photo-4621424.jpeg?auto=compress&w=100" class="avatar">
+                <div class="info"><h4>Брови и ресницы</h4><p>Ламинирование, архитектура</p></div>
+            </div>
+            <div>❯</div>
+        </div>
     </div>
 
-    <div class="section-title">Выберите мастера</div>
-    <div class="master-card" onclick="selectMaster(this, 'Анастасия')">
-        <div class="master-avatar"><img src="https://i.pravatar.cc/100?u=1"></div>
-        <div class="master-info"><h4>Анастасия</h4><p>Топ-мастер • ★ 4.9</p></div>
+    <!-- ЭКРАН 2: ВЫБОР УСЛУГИ -->
+    <div id="screen-services" class="screen">
+        <div class="subtitle" onclick="nav('home')" style="color: var(--accent); font-weight:bold;">❮ Назад</div>
+        <h1 id="cat-title">Услуги</h1>
+        
+        <div class="section-title">Выберите услугу</div>
+        <div id="services-list">
+            <!-- Сюда подгружаются услуги через JS -->
+        </div>
     </div>
-    <div class="master-card" onclick="selectMaster(this, 'Екатерина')">
-        <div class="master-avatar"><img src="https://i.pravatar.cc/100?u=3"></div>
-        <div class="master-info"><h4>Екатерина</h4><p>Стилист • ★ 4.8</p></div>
+
+    <!-- ЭКРАН 3: МАСТЕР И ВРЕМЯ -->
+    <div id="screen-booking" class="screen">
+        <div class="subtitle" onclick="nav('services')" style="color: var(--accent); font-weight:bold;">❮ Назад</div>
+        <h1 id="selected-service-title">Запись</h1>
+        <div class="subtitle" id="selected-service-price"></div>
+
+        <div class="section-title">Выберите мастера</div>
+        <div class="card master-opt" onclick="selectMaster('Анастасия', this)">
+            <div class="card-left">
+                <img src="https://i.pravatar.cc/100?img=1" class="avatar round">
+                <div class="info"><h4>Анастасия</h4><p>Топ-мастер • ★ 4.9</p></div>
+            </div>
+        </div>
+        <div class="card master-opt" onclick="selectMaster('Екатерина', this)">
+            <div class="card-left">
+                <img src="https://i.pravatar.cc/100?img=5" class="avatar round">
+                <div class="info"><h4>Екатерина</h4><p>Стилист • ★ 4.8</p></div>
+            </div>
+        </div>
+
+        <div class="section-title">Сегодня</div>
+        <div class="grid-4" id="time-grid">
+            <div class="slot time-opt" onclick="selectTime('10:00', this)">10:00</div>
+            <div class="slot time-opt" onclick="selectTime('12:00', this)">12:00</div>
+            <div class="slot time-opt" onclick="selectTime('14:00', this)">14:00</div>
+            <div class="slot time-opt" onclick="selectTime('16:00', this)">16:00</div>
+            <div class="slot time-opt" onclick="selectTime('18:00', this)">18:00</div>
+            <div class="slot time-opt" onclick="selectTime('20:00', this)">20:00</div>
+        </div>
     </div>
 
-    <div class="section-title">Доступное время</div>
-    <div class="time-grid">
-        <div class="time-slot" onclick="selectTime(this, '10:00')">10:00</div>
-        <div class="time-slot" onclick="selectTime(this, '12:00')">12:00</div>
-        <div class="time-slot" onclick="selectTime(this, '14:00')">14:00</div>
-        <div class="time-slot" onclick="selectTime(this, '16:00')">16:00</div>
-        <div class="time-slot" onclick="selectTime(this, '18:00')">18:00</div>
-        <div class="time-slot" onclick="selectTime(this, '20:00')">20:00</div>
+    <!-- ЭКРАН 4: ПРОФИЛЬ -->
+    <div id="screen-profile" class="screen">
+        <h1>Профиль</h1>
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-left">
+                <div class="avatar round" style="display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>
+                <div class="info"><h4 id="user-name">Гость</h4><p>Скидка клиента: 5%</p></div>
+            </div>
+        </div>
+        <div class="card"><div class="info"><h4>Мои записи</h4></div><div>❯</div></div>
+        <div class="card"><div class="info"><h4>Настройки</h4></div><div>❯</div></div>
     </div>
-</div>
 
-<div class="footer">
-    <button id="confirm-btn" class="main-btn" onclick="sendData()">Подтвердить запись</button>
-</div>
+    <!-- КНОПКА ПОДТВЕРЖДЕНИЯ -->
+    <button id="main-btn" class="fixed-btn" disabled onclick="finishBooking()">Подтвердить запись</button>
 
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.ready();
+    <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="nav('home')"><i>🏠</i>Главная</div>
+        <div class="nav-item" onclick="nav('profile')"><i>👤</i>Профиль</div>
+    </div>
 
-    let booking = {
-        service: "Окрашивание волос",
-        master: null,
-        time: null
-    };
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
 
-    function selectMaster(el, name) {
-        document.querySelectorAll('.master-card').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-        booking.master = name;
-        validate();
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function selectTime(el, time) {
-        document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-        el.classList.add('selected');
-        booking.time = time;
-        validate();
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function validate() {
-        const btn = document.getElementById('confirm-btn');
-        if (booking.master && booking.time) {
-            btn.classList.add('active');
+        // Подтягиваем имя из ТГ
+        if(tg.initDataUnsafe?.user) {
+            document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
         }
-    }
 
-    function sendData() {
-        tg.HapticFeedback.notificationOccurred('success');
-        tg.sendData(JSON.stringify(booking));
-    }
-</script>
+        // Глобальное состояние приложения (как у взрослых)
+        let appState = {
+            category: '',
+            service: '',
+            price: '',
+            master: '',
+            time: ''
+        };
 
+        // База данных услуг
+        const db = {
+            'Волосы': [
+                {name: 'Стрижка женская', price: 'от 1 500 ₽'},
+                {name: 'Окрашивание волос', price: 'от 3 500 ₽'},
+                {name: 'Укладка', price: 'от 1 200 ₽'}
+            ],
+            'Ногти': [
+                {name: 'Маникюр с покрытием', price: 'от 1 800 ₽'},
+                {name: 'Педикюр', price: 'от 2 200 ₽'}
+            ],
+            'Брови': [
+                {name: 'Коррекция и окрашивание', price: 'от 1 200 ₽'},
+                {name: 'Ламинирование', price: 'от 1 800 ₽'}
+            ]
+        };
+
+        // Функция маршрутизации (переключатель экранов)
+        function nav(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + screenId).classList.add('active');
+            
+            // Прячем кнопку на главных экранах
+            const btn = document.getElementById('main-btn');
+            if (screenId === 'booking') {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+            
+            window.scrollTo(0, 0);
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Переход в категорию и генерация списка услуг
+        function goToServices(cat) {
+            appState.category = cat;
+            document.getElementById('cat-title').innerText = cat;
+            
+            const list = document.getElementById('services-list');
+            list.innerHTML = '';
+            
+            db[cat].forEach(item => {
+                list.innerHTML += `
+                    <div class="card" onclick="goToBooking('${item.name}', '${item.price}')">
+                        <div class="info"><h4>${item.name}</h4><p class="price">${item.price}</p></div>
+                        <div>❯</div>
+                    </div>
+                `;
+            });
+            nav('services');
+        }
+
+        // Переход к выбору мастера и времени
+        function goToBooking(serviceName, price) {
+            appState.service = serviceName;
+            appState.price = price;
+            document.getElementById('selected-service-title').innerText = serviceName;
+            document.getElementById('selected-service-price').innerText = price;
+            
+            // Сбрасываем выбор
+            appState.master = ''; appState.time = '';
+            document.querySelectorAll('.master-opt, .time-opt').forEach(el => el.classList.remove('selected'));
+            checkButton();
+            
+            nav('booking');
+        }
+
+        function selectMaster(name, el) {
+            document.querySelectorAll('.master-opt').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            appState.master = name;
+            tg.HapticFeedback.impactOccurred('medium');
+            checkButton();
+        }
+
+        function selectTime(time, el) {
+            document.querySelectorAll('.time-opt').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            appState.time = time;
+            tg.HapticFeedback.impactOccurred('light');
+            checkButton();
+        }
+
+        function checkButton() {
+            const btn = document.getElementById('main-btn');
+            btn.disabled = !(appState.master && appState.time);
+        }
+
+        function finishBooking() {
+            tg.HapticFeedback.notificationOccurred('success');
+            
+            const result = {
+                action: "new_booking",
+                service: appState.service,
+                price: appState.price,
+                master: appState.master,
+                time: appState.time,
+                date: new Date().toLocaleDateString()
+            };
+            
+            tg.sendData(JSON.stringify(result));
+        }
+    </script>
 </body>
 </html>
